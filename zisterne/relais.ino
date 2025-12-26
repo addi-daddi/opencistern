@@ -1,5 +1,5 @@
 //********************************************************
-// Schaltet ein externes Relais an Ausgang D4 / Pin 2
+// Schaltet ein externes Relais an Ausgang D3 / Pin 0
 // in Abhaengigkeit von zwei Werten
 //********************************************************
 void relais() {

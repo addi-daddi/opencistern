@@ -47,7 +47,8 @@ typedef struct {
   //Sonstiges
   int data_dezstellen_anzeige;
   int data_anzeige_liter_check;
-
+  int data_height_over_NN;
+  
   //weitere MQTT
   char data_mqtt_abstand_topic[51];
   int data_mqtt_port;  

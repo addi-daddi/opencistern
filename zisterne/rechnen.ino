@@ -52,6 +52,17 @@ void looprechnen() {
     delay(100);
   }
 
+  //****************************************************
+  // Druck Sensor ADS1115
+  //****************************************************
+  if (cfg.data_zisterne_sensor == 4) {
+    adc0 = ads.getLastConversionResults();
+    //Serial.print("AIN0: "); Serial.println(adc0*0.02);
+    abstand=(cfg.data_abst_sen_boden-(adc0*0.02));
+    fuellhoehe=(adc0*0.02);
+    delay(100);
+  }
+
   //abstand = 100; //nur testweise wenn kein Sensor dran haengt
   
   //Fuellstand prozentual berechnen

@@ -20,6 +20,11 @@
 //#include "Adafruit_VL53L0X.h"
 #include <VL53L0X.h>              //Pololu-Lib
 #include "SparkFun_VL53L1X.h"
+#include <Adafruit_ADS1X15.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include "Adafruit_BMP280.h"
+
 
 extern "C" {
   #include "user_interface.h"
@@ -39,11 +44,16 @@ VL53L0X l0x_sensor;
 //VL53L1X
 SFEVL53L1X l1x_sensor;
 
+//ADS1115
+Adafruit_ADS1115 ads;  /* Use this for the 16-bit version */
+//Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
+int16_t adc0;
 
 //********************************************************
 // Variablen für Abstandsmessung
 //********************************************************
 int abstand;
+int fuellhoehe;
 float fuellstand;
 float volumen;
 int volumen_max;
@@ -57,14 +67,23 @@ unsigned long startMillisAbstand;
 //*********************
 // Temperatursensor
 //*********************
+// DHT22
 #define DHTPIN  14 //D5
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE); 
 float humidity;
 float temperature;
+float pressure;
+float pressureReal;
+float altitude;
 unsigned long startMillisTemp;
 unsigned long currentMillisTemp;
 
+//BME280
+Adafruit_BME280 bme; // I2C
+
+//BMP280
+Adafruit_BMP280 bmp; // I2C
 
 //********************************************************
 // Konfiguration der Displays
@@ -78,22 +97,22 @@ SSOLED ssoled;                                   // benoetigt fuer OLED
 //Taster fuer Display
 //int sensor = 14; // D5 VCC Sensor
 int taster = 15; // D8 für Taster
-int tasterstatus = 0;
-int previousMicros = 0;
-int displayMicros = 0;
-int backlstatus = 0;
+// int tasterstatus = 0;
+int previousMicros = 0; //timer
+int displayMicros = 0; //timer
+bool backlstatus = false;
 
 //********************************************************
 // Relais an D4
 //********************************************************
-const int relaisPIN = 2;  //D4
+const int relaisPIN = 2;  //D4 HIGH bei Boot
 unsigned long startMillisRelais;
 unsigned long currentMillisRelais;
 
 //********************************************************
 // Relais an D3
 //********************************************************
-const int relais2PIN = 2;  //D3
+const int relais2PIN = 0;  //D3 
 unsigned long startMillisRelais2;
 unsigned long currentMillisRelais2;
 
@@ -144,10 +163,12 @@ const long utcOffsetInSeconds = 7200;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 //********************************************************
-// Display refresh
+// Display variablen
 //********************************************************
 unsigned long startMillisDisplay;
 unsigned long currentMillisDisplay;
+// vgl. https://docs.arduino.cc/language-reference/funktionen/external-interrupts/attachInterrupt/
+volatile bool tasterHigh;
 
 //********************************************************
 // Grundsätzliche Einstellungen
@@ -187,6 +208,20 @@ uint32_t freeheap = system_get_free_heap_size();
 bool gesendet_pushover = false;
 bool gesendet_mail = false;
 
+
+//********************************************************
+// ISR
+//********************************************************
+ICACHE_RAM_ATTR void enableBacklight() {
+    tasterHigh = true;
+}
+
+void resetBacklightTaster() {
+  tasterHigh = false;
+}
+
+
+
 //********************************************************
 // SETUP
 //********************************************************
@@ -194,9 +229,9 @@ void setup() {
   Wire.begin();
   
   Serial.begin(115200);
-  delay(3000);
+  delay(1000);
   Serial.println("Auf gehts...");
-
+  
   //Lade Konfiguration aus EEPROM
   ladekonfig();
 
@@ -275,7 +310,32 @@ void setup() {
     }
     
   }
-  
+  //ADS1115	
+  if (cfg.data_zisterne_sensor == 4) {
+    Serial.println("ADS1115 ausgewaehlt");
+  // The ADC input range (or gain) can be changed via the following
+  // functions, but be careful never to exceed VDD +0.3V max, or to
+  // exceed the upper and lower limits if you adjust the input range!
+  // Setting these values incorrectly may destroy your ADC!
+  //                                                                -------  -------
+  ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+  // ads.setGain(GAIN_ONE);        //1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+  // ads.setGain(GAIN_EIGHT);      // 8x gaSerial.println("Single-ended readings from AIN0 with >3.0V comparator");
+  // Serial.println("ADC Range: +/- 6.144V (1 bit = 3mV/ADS1015, 0.1875mV/ADS1115)");
+  // Serial.println("Comparator Threshold: 1000 (3.000V)");in   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+  // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV 
+   if (!ads.begin()) {
+    Serial.println("Failed to initialize ADS.");
+    while (1);
+   }
+ 
+  // Setup 3V comparator on channel 0
+  ads.startComparator_SingleEnded(0, 1000);
+ }
+
+//-----------------------------------------------------------------------------------------
   //Zeit merken um EigenAPI, WebAPI und OTA zeitgesteuert aufzurufen
   //auch Intervall zum Refresh von Display und NTP
   startMillisEigen = millis();
@@ -313,23 +373,57 @@ void setup() {
   }
 
   //Starte Temperaturmessung
-  dht.begin();
+  if (cfg.data_temperatur == 1) { 
+  dht.begin(); //DHT22
   //einmal initial messen
   humidity = dht.readHumidity();
   Serial.println(humidity);
   // Lese Temperatur
   temperature = dht.readTemperature();
   Serial.println(temperature);
+  }
+// --------------------------------
+  if (cfg.data_temperatur == 2) { 
+  bme.begin(0x76); //BME280
+  temperature = (bme.readTemperature() -1);
+  Serial.println(temperature);
+  humidity = bme.readHumidity();
+  Serial.println(humidity);
+  pressureReal = (bme.readPressure() / 100);
+  Serial.println(pressureReal);
+  altitude = (cfg.data_height_over_NN);
+  Serial.println(altitude);
+  // Berechnung Druck über NN
+  pressure = pressureReal/pow(1 - altitude/44330.0, 5.255);
+  Serial.println(pressure);
+  }
+//----------------------------------------
+ if (cfg.data_temperatur == 3) { 
+  bmp.begin(0x76); //BMP280
+  temperature = (bmp.readTemperature() -1);
+  Serial.println(temperature);
+  pressureReal = (bmp.readPressure() / 100);
+  Serial.println(pressureReal);
+  altitude = (cfg.data_height_over_NN);
+  Serial.println(altitude);
+  // Berechnung Druck über NN
+  pressure = pressureReal/pow(1 - altitude/44330.0, 5.255);
+  Serial.println(pressure);
+  }
 
-  //Ausgang D4
+  //Ausgang D3
   pinMode(relaisPIN, OUTPUT);
   digitalWrite(relaisPIN,LOW);
   //Serial.println("LED Test..");
   //digitalWrite(relaisPIN,HIGH);
 
-  //Ausgang D3
+  //Ausgang D4
   //pinMode(relais2PIN, OUTPUT);
   //digitalWrite(relais2PIN,LOW);
+
+  //PIN taster für Backlight als Interupt registrieren
+  resetBacklightTaster();
+  attachInterrupt(digitalPinToInterrupt(taster), enableBacklight, RISING);
   
 }
 
@@ -377,9 +471,37 @@ void loop() {
         Serial.println(temperature);
       }
   
-      //BME Sensor
+      //BME280
       if (cfg.data_temperatur == 2) {
-        //noch nix zu tun
+        // Lese Luftfeuchte
+        humidity = bme.readHumidity();
+        Serial.println(humidity);
+        // Lese Temperatur
+        temperature = (bme.readTemperature() -1);
+        Serial.println(temperature);
+        // Lese Luftdruck 
+        pressureReal = (bme.readPressure() / 100);
+        Serial.println(pressureReal);
+        altitude = (cfg.data_height_over_NN);
+        Serial.println(altitude);
+        // Berechnung Druck über NN
+        pressure = pressureReal/pow(1 - altitude/44330.0, 5.255);
+        Serial.println(pressure);
+      }
+
+      //BMP280
+      if (cfg.data_temperatur == 3) {
+        // Lese Temperatur
+        temperature = (bmp.readTemperature() -1);
+        Serial.println(temperature);
+        // Lese Luftdruck
+        pressureReal = (bmp.readPressure() / 100);
+        Serial.println(pressureReal);
+        altitude = (cfg.data_height_over_NN);
+        Serial.println(altitude);
+        // Berechnung Druck über NN
+        pressure = pressureReal/pow(1 - altitude/44330.0, 5.255);
+        Serial.println(pressure);
       }
     }
   }

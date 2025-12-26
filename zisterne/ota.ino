@@ -20,7 +20,7 @@ void checkForUpdates() {
     Serial.println( fwVersionURL );
     
     HTTPClient httpClient;
-    httpClient.begin( fwVersionURL );
+   // httpClient.begin( fwVersionURL );
     int httpCode = httpClient.GET();
     if( httpCode == 200 ) {
       String newFWVersion = httpClient.getString();
@@ -37,7 +37,7 @@ void checkForUpdates() {
       
         String fwImageURL = fwURL;
         fwImageURL.concat( ".bin" );
-        t_httpUpdate_return ret = ESPhttpUpdate.update( fwImageURL );
+        t_httpUpdate_return ret = ESPhttpUpdate.update(httpClient, fwImageURL );
       
         switch(ret) {
           case HTTP_UPDATE_FAILED:

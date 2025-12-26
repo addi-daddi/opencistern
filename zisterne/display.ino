@@ -2,12 +2,13 @@
   //LCD Setup
   //***********************
   void ladeLCDdisplay() {
-    Wire.begin(12, 13); //SDA-D6, SCL-D7      // LCD Setup (bei beiden LCD Displays gleich)
+    // Wire.begin(12, 13); //SDA-D6, SCL-D7      // LCD Setup (bei beiden LCD Displays gleich)
   
     // *******************Boot mit LAN-Info für 1602 Display**************************
     if (cfg.data_display ==1) {
       timer.setInterval(1000);
-      lcd.begin();
+    //  lcd.begin();
+      lcd.init();
       lcd.backlight();
       lcd.print(cfg.SSID);
       lcd.setCursor(0, 1);
@@ -27,7 +28,7 @@
     // *******************Boot mit LAN-Info für 1604 Display**************************
     if (cfg.data_display ==2) {
       timer.setInterval(1000);
-      lcd.begin();
+      lcd.init();
       lcd.backlight();
       lcd.setCursor(0, 0);
       lcd.print("Ihre SSID:");
@@ -47,7 +48,8 @@
       delay (5000);
       lcd.noBacklight();
     }
-  }
+   }
+   
   
  void ladeOLEDdisplay() {
  //*******************************Initialisierung und DEBUG OLED************************************
@@ -97,101 +99,140 @@
   //LCD mit Tastersteuerung für 1602 Display
   //***********************
  void loop1602() { 
-    if ( millis() - displayMicros >= 5000 ) {
-    displayMicros = millis();
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print(volumen);
-    lcd.print( " Liter,");
-    lcd.setCursor(0,1);
-    lcd.print(fuellstand);
-    lcd.print( " % voll");
+    if (millis() - displayMicros >= 5000 ) {
+      displayMicros = millis();
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print(volumen);
+      lcd.print( " Liter,");
+      lcd.setCursor(0,1);
+      lcd.print(fuellstand);
+      lcd.print( " % voll");
     }
     
-    if ((backlstatus == 0) && (digitalRead(taster) == HIGH)) {
-    lcd.backlight();
-    backlstatus = 1;
-    delay (300);                                                 //gegen Tastenprellen 
-    }  
     unsigned long tasterMicros = millis();
-    if (tasterMicros - previousMicros >= 90000 ) {
-    previousMicros = tasterMicros;
-    lcd.noBacklight();
+    if ((tasterMicros - previousMicros >= 90000) && backlstatus) {  
+      lcd.noBacklight();
+      backlstatus = false;
+      return;
     }
-    if ((backlstatus == 1) && (digitalRead(taster) == HIGH)) {
-    lcd.noBacklight();
-    backlstatus = 0;
-    delay (300);                                                 //gegen Tastenprellen
+
+    if ((backlstatus == false) && (tasterHigh)) {
+      resetBacklightTaster();
+      lcd.backlight();
+      backlstatus = true;
+      previousMicros = millis();
+      return;
+    }  
+    
+    if (backlstatus && tasterHigh) {
+      resetBacklightTaster();
+      lcd.noBacklight();
+      backlstatus = false;
+      return;
     }
-      }
+
+}
 
 //***********************
 //LCD mit Tastersteuerung für 1604 Display
 //***********************
- void loop1604() { 
+void loop1604() { 
     if ( millis() - displayMicros >= 5000 ) {
-    displayMicros = millis();
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print( "F\365llstand:"); // Ueberschrift
-    lcd.setCursor(0,1);
-    lcd.print(volumen);
-    lcd.print( " Liter,");
-    lcd.setCursor(0,3);
-    lcd.print(fuellstand);
-    lcd.print( " % voll");
+      displayMicros = millis();
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print( "F\365llstand:"); // Ueberschrift
+      lcd.setCursor(0,1);
+      lcd.print(volumen);
+      lcd.print( " Liter,");
+      lcd.setCursor(0,3);
+      lcd.print(fuellstand);
+      lcd.print( " % voll");
     }
     
-    if ((backlstatus == 0) && (digitalRead(taster) == HIGH)) {
-     lcd.backlight();
-     backlstatus = 1;
-     delay (300);                                                  //gegen Tastenprellen
-     }  
-     unsigned long tasterMicros = millis();
-     if (tasterMicros - previousMicros >= 180000 ) {
-     previousMicros = tasterMicros;
-     lcd.noBacklight();
-     }
-     if ((backlstatus == 1) && (digitalRead(taster) == HIGH)) {
-     lcd.noBacklight();
-     backlstatus = 0;
-     delay (300);                                                 //gegen Tastenprellen
-     }
-      }
+    unsigned long tasterMicros = millis();
+    if ((tasterMicros - previousMicros >= 90000) && backlstatus) {  
+      lcd.noBacklight();
+      backlstatus = false;
+      return;
+    }
+
+    if ((backlstatus == false) && (tasterHigh)) {
+      resetBacklightTaster();
+      lcd.backlight();
+      backlstatus = true;
+      previousMicros = millis();
+      return;
+    }  
+    
+    if (backlstatus && tasterHigh) {
+      resetBacklightTaster();
+      lcd.noBacklight();
+      backlstatus = false;
+      return;
+    }
+}
 //***********************
 // OLED Display
 //***********************
+
   void loopOLED() { 
-      if (((backlstatus == 0) && (digitalRead(taster) == HIGH)) || (backlstatus == 1)){ 
-       backlstatus = 1;
-       delay (300);
-       if ( millis() - displayMicros >= 5000 ) {
-       displayMicros = millis();
+
+      // setze Display-Timout zu 30 Sekunden
+      // prüfe wenn Display an ist, ob das letzte Einschalten mehr als 30sek in der Vergangenheit liegt
+      unsigned long oledTimeout = millis();
+      if ((oledTimeout - previousMicros >= 30000) && backlstatus ) {
        oledFill(&ssoled, 0, 1);
-       char Volumen[10];
-       sprintf(Volumen,"%.2f l", volumen);
-       char Fuellstand[10];
-       sprintf(Fuellstand,"%.2f%%", fuellstand);
-       oledWriteString(&ssoled, 0,0,0,(char *)"Fuellstand:" , FONT_NORMAL, 0, 1);
-       oledWriteString(&ssoled, 0,60,3,Volumen, FONT_SMALL, 0, 1); 
-       oledWriteString(&ssoled, 0,60,5,Fuellstand, FONT_SMALL, 0, 1);
-       //*********************Grafik **********************
-       rest = map(fuellstand, 0, 100, 62, 13);                // Hoehe des Balkens ermitteln
-       oledRectangle(&ssoled, (1), (13), (45), (62), 1, 0);   // aeussere Linie zeichnen
-       oledRectangle(&ssoled, (1), (rest), (45), (62), 1, 1); // Fuellbalken
-       oledDumpBuffer(&ssoled, NULL);
-       }
-      
-       unsigned long tasterMicros = millis();
-      if (tasterMicros - previousMicros >= 180000 ) {
-       previousMicros = tasterMicros;
-       oledFill(&ssoled, 0, 1);
-       backlstatus = 0;
-       }
-      if ((backlstatus == 1) && (digitalRead(taster) == HIGH)) {
-       oledFill(&ssoled, 0, 1);
-       backlstatus = 0;
-       delay (300);
+       backlstatus = false;
+       return;
       }
+      
+
+      //if ((backlstatus == 1) && (digitalRead(taster) == HIGH)) {
+      
+      // Schalte das Display aus, falls es an ist
+      // setze das Flag für den GPIO-Pin zurück
+      if (backlstatus && tasterHigh) { 
+       resetBacklightTaster();
+       oledFill(&ssoled, 0, 1);
+       //delay (300); //gegen Tastenprellen
+       backlstatus = false;
+       return;
+      }
+
+      //if (((backlstatus == 0) && (digitalRead(taster) == HIGH)) || (backlstatus == 1)){ 
+      // if ((backlstatus == 0) && (digitalRead(taster) == HIGH)) {   
+      
+      // schalte Display ein, falls aus
+      // aktualisiere Display nach 5 sek falls an
+      // setze Flag für GPIO-Pin zurück und speichere Zeitpunkt des letzten Taster-Drucks in previousMicros
+      if (!backlstatus && tasterHigh) {  
+        if (tasterHigh) {
+          previousMicros = millis();
+        }
+        // delay (300); //gegen Tastenprellen
+        backlstatus = true;
+        resetBacklightTaster();
+      }
+
+      if (backlstatus) {
+        // aktualisiere Display
+        if ( millis() - displayMicros >= 5000 ) {
+          displayMicros = millis();
+          oledFill(&ssoled, 0, 1);
+          char Volumen[10];
+          sprintf(Volumen,"%.2f l", volumen);
+          char Fuellstand[10];
+          sprintf(Fuellstand,"%.2f%%", fuellstand);
+          oledWriteString(&ssoled, 0,0,0,(char *)"Fuellstand:" , FONT_NORMAL, 0, 1);
+          oledWriteString(&ssoled, 0,60,3,Volumen, FONT_SMALL, 0, 1); 
+          oledWriteString(&ssoled, 0,60,5,Fuellstand, FONT_SMALL, 0, 1);
+          //*********************Grafik **********************
+          rest = map(fuellstand, 0, 100, 62, 13);                // Hoehe des Balkens ermitteln
+          oledRectangle(&ssoled, (1), (13), (45), (62), 1, 0);   // aeussere Linie zeichnen
+          oledRectangle(&ssoled, (1), (rest), (45), (62), 1, 1); // Fuellbalken
+          oledDumpBuffer(&ssoled, NULL);
+        }
       }
 }

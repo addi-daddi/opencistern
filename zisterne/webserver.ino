@@ -1,14 +1,16 @@
 void webHandleRoot() {
   String inhalt;
   float vcc = ESP.getVcc() / 1000.0;
-  inhalt  = "<!DOCTYPE html>";
-  inhalt += "<html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1.0'><meta http-equiv='refresh' content='60'><title>" + anwendungsname + "</title></head><body style='font-family:verdana;background-color:#B9DFF8;color:#000000;margin:0px'>";
-  inhalt += "<p style='background-color:#FFFFFF;color:#000000;padding:20px;padding-left:10px;margin:0px;'><img style='vertical-align: middle;width:50px;' src=' data:image/png;base64,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'>&nbsp;&nbsp;";
-  inhalt += "<span style='font-size:24px;font-weight:bold;'>" + anwendungsname + "</span>&nbsp;<span style='font-size:12px;font-weight:normal;'>v" + fw_version + "</span></p>";  
-  inhalt += "<p style='font-size:18px;font-weight:bold;background-color:#85C5EE;padding-left:10px;padding-top:10px;padding-bottom:10px;margin:0px;'>Startseite</p>";
-  inhalt += "<br>";
-  inhalt += "<div style='padding-left:10px;padding_right:10px;'>";
-
+  inhalt = 
+    "<!DOCTYPE html>"
+    "<html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1.0'><meta http-equiv='refresh' content='30'><title>"+anwendungsname+"</title></head><body style='font-family:verdana;background-color:#B9DFF8;color:#000000;margin:0px'>"
+    // "<p style='background-color:#FFFFFF;color:#000000;padding:20px;padding-left:10px;margin:0px;'><img style='vertical-align: middle;width:50px;' src='data:image/webp;base64,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'>&nbsp;&nbsp;"
+    "<span style='font-size:48px;font-weight:bold;'>"+anwendungsname+"</span>&nbsp;<span style='font-size:12px;font-weight:normal;'>v"+fw_version+"</span></p>"
+    "<p style='font-size:18px;font-weight:bold;background-color:#85C5EE;padding-left:10px;padding-top:10px;padding-bottom:10px;margin:0px;'>Startseite</p>"
+    "<br>"
+    "<div style='padding-left:10px;padding_right:10px;'>";
+ 
+ 
   int breite_anzeige = 0;
 
   //  inhalt += "<table border=0>";
@@ -217,13 +219,23 @@ void webHandleRoot() {
   }
 
   //Abstand
+  if (cfg.data_zisterne_sensor < 4) {
   inhalt += "<div style='float:left; width: 160px; height: 120px; background: #85C5EE; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
   inhalt += abstand;
   inhalt += "<span style='font-size:20px;'>cm</span>";
   inhalt += "<p style='width:150px; background: #5EACDF; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Abstand Wasser</p></div>";
+  }
+  if (cfg.data_zisterne_sensor == 4) {
+  inhalt += "<div style='float:left; width: 160px; height: 120px; background: #85C5EE; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
+  inhalt += fuellhoehe;
+  inhalt += "<span style='font-size:20px;'>cm</span>";
+  inhalt += "<p style='width:150px; background: #5EACDF; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Füllhöhe </p></div>";
+  }
+//--------------------------------------------------------------------
 
   if (cfg.data_temperatur_enable == 1) {
     //Temperatur
+    if (cfg.data_temperatur == 1) {
     inhalt += "<div style='float:left; width: 160px; height: 120px; background: #E1E1E1; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
     inhalt += temperature;
     inhalt += "<span style='font-size:20px;'>°C</span>";
@@ -234,6 +246,38 @@ void webHandleRoot() {
     inhalt += (int)roundf(humidity);
     inhalt += "<span style='font-size:20px;'>%</span>";
     inhalt += "<p style='width:150px; background: #ADADAD; color:#ffffff; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Luftfeuchte</p></div>";
+   }
+    if (cfg.data_temperatur == 2) {
+    inhalt += "<div style='float:left; width: 160px; height: 120px; background: #E1E1E1; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
+    inhalt += temperature;
+    inhalt += "<span style='font-size:20px;'>°C</span>";
+    inhalt += "<p style='width:150px; background: #ADADAD; color:#ffffff;; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Temperatur</p></div>";
+
+    //Luftfeuchte
+    inhalt += "<div style='float:left; width: 160px; height: 120px; background: #E1E1E1; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
+    inhalt += (int)roundf(humidity);
+    inhalt += "<span style='font-size:20px;'>%</span>";
+    inhalt += "<p style='width:150px; background: #ADADAD; color:#ffffff; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Luftfeuchte</p></div>";
+   
+    //Luftdruck
+    inhalt += "<div style='float:left; width: 160px; height: 120px; background: #E1E1E1; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
+    inhalt += (int)roundf(pressure);
+    inhalt += "<span style='font-size:20px;'>hPa</span>";
+    inhalt += "<p style='width:150px; background: #ADADAD; color:#ffffff; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Luftdruck (NN)</p></div>";
+   } 
+
+    if (cfg.data_temperatur == 3) {
+    inhalt += "<div style='float:left; width: 160px; height: 120px; background: #E1E1E1; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
+    inhalt += temperature;
+    inhalt += "<span style='font-size:20px;'>°C</span>";
+    inhalt += "<p style='width:150px; background: #ADADAD; color:#ffffff;; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Temperatur</p></div>";
+
+    //Luftdruck
+    inhalt += "<div style='float:left; width: 160px; height: 120px; background: #E1E1E1; padding: 5px; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
+    inhalt += (int)roundf(pressure);
+    inhalt += "<span style='font-size:20px;'>hPa</span>";
+    inhalt += "<p style='width:150px; background: #ADADAD; color:#ffffff; padding: 5px; font-size:14px; vertical-align: middle; text-align: center; margin-top:40px;'>Luftdruck (NN)</p></div>";
+   }    
   }
   //*******************************
 
@@ -258,7 +302,7 @@ void webHandleRoot() {
   //  inhalt += "<div style='float:left; width: 160px; height: 120px; background: #ADADAD; padding: 5px; color:#ffffff; font-size:45px; vertical-align: middle; text-align: center; margin: 2px;'>";
   //  inhalt += relais2_status;
   //  inhalt += "<span style='font-size:20px;'></span>";
-  //  inhalt += "<p style='width:150px; background: #676767; padding: 5px; font-size:14px; color:#ffffff; vertical-align: middle; text-align: center; margin-top:40px;'>Schalter an D3</p></div>";
+  //  inhalt += "<p style='width:150px; background: #676767; padding: 5px; font-size:14px; color:#ffffff; vertical-align: middle; text-align: center; margin-top:40px;'>Schalter an D4</p></div>";
   //}
   
   if (cfg.data_webapi_check == 1) {    
@@ -305,6 +349,9 @@ void webHandleRoot() {
   }
   if (cfg.data_zisterne_sensor == 3) {
     inhalt += "VL53L1X";
+      }
+  if (cfg.data_zisterne_sensor == 4) {
+    inhalt += "ADS1115";
   }
   inhalt += "</td></tr>";
 
@@ -529,14 +576,20 @@ void webHandleConfig() {
     inhalt += "'> an GPIO-Pin 14 (D5) mit 10k&#8486; von Daten gegen VCC</td></tr>";
     inhalt += "<tr><td></td><td></td></tr>";
 
-    inhalt += "<tr><td>BME280</td><td><input type='radio' disabled='disabled' name='temp_check_form' value='2'";
+    inhalt += "<tr><td>BME280</td><td><input type='radio'  name='temp_check_form' value='2'";
     if (cfg.data_temperatur == 2) {
       inhalt += " checked ";
     }
-    inhalt += "'> (noch nicht implementiert)</td></tr>";
-    
-    inhalt += "<tr><td>DS18B20</td><td><input type='radio' disabled='disabled' name='temp_check_form' value='3'";
+    inhalt += "'> (an I&sup2;C)</td></tr>";
+
+    inhalt += "<tr><td>BMP280</td><td><input type='radio'  name='temp_check_form' value='3'";
     if (cfg.data_temperatur == 3) {
+      inhalt += " checked ";
+    }
+    inhalt += "'> (an I&sup2;C)</td></tr>";
+    
+    inhalt += "<tr><td>DS18B20</td><td><input type='radio' disabled='disabled' name='temp_check_form' value='4'";
+    if (cfg.data_temperatur == 4) {
       inhalt += " checked ";
     }
     inhalt += "'> (noch nicht implementiert)</td></tr>";
@@ -672,7 +725,7 @@ void webHandleConfig() {
     }
     inhalt += ">High Speed</option></select></td></tr>";
 
-
+//-------------------------------------------------------------------------
     inhalt += "<tr><td>VL53L1X TOF-Sensor (D1->SCL, D2->SDA, I&sup2;C 0x29)</td><td><input type='radio' name='zisterne_sensor_form' value='3' ";
     if (cfg.data_zisterne_sensor == 3) {
       inhalt += " checked ";
@@ -688,15 +741,27 @@ void webHandleConfig() {
       inhalt += " selected";
     }
     inhalt += ">Long (4m)</option></select></td></tr>";
-
+//-------------------------------------------------------------------------------------------
+    inhalt += "<tr><td>ADS1115 Druck-Sensor (D1->SCL, D2->SDA, I&sup2;C 0x48)</td><td><input type='radio' name='zisterne_sensor_form' value='4' ";
+    if (cfg.data_zisterne_sensor == 4) {
+      inhalt += " checked ";
+    }
+    inhalt += " ></td></tr>";
+//-------------------------------------------------------------------------------------------
     inhalt += "<tr><td><br><br></td><td></td></tr>";
 
-    inhalt += "<tr><td>Abstand Sensor/Boden</td><td><input type='text' size=4 width=60 maxlength=4 name='abst_sen_boden_form' value='";
+    inhalt += "<tr><td>Aufstellort (H&ouml;he &uuml;ber NN)</td><td><input type='text' size=4 width=60 maxlength=4 name='height_over_NN_form' value='";
+    if (stationList == "") {
+      inhalt += cfg.data_height_over_NN;
+    }
+    inhalt += "'> m</td></tr>";
+//---------------------------------------------------------
+    inhalt += "<tr><td>Abstand Sensor/Boden (Eintauchtiefe bei Drucksensor)</td><td><input type='text' size=4 width=60 maxlength=4 name='abst_sen_boden_form' value='";
     if (stationList == "") {
       inhalt += cfg.data_abst_sen_boden;
     }
     inhalt += "'> cm</td></tr>";
-    inhalt += "<tr><td>Abstand Sensor/Max. Wasserstand</td><td><input type='text' size=4 width=60 maxlength=4 name='abst_sen_max_form' value='";
+    inhalt += "<tr><td>Abstand Sensor/Max. Wasserstand (ocm bei Drucksensor)</td><td><input type='text' size=4 width=60 maxlength=4 name='abst_sen_max_form' value='";
     if (stationList == "") {
       inhalt += cfg.data_abst_sen_max;
     }
@@ -1036,7 +1101,7 @@ void webHandleConfig() {
   inhalt += "</body>";
   inhalt += "</html>";
   inhalt += "\r\n\r\n";
-  server.send(200, "text/html", inhalt);
+  server.send(200, "text/html", inhalt); 
 }
 
 //********************************************************
@@ -1057,7 +1122,7 @@ void webHandleConfigSave() {
   inhalt += "</body>";
   inhalt += "</html>";
   inhalt += "\r\n\r\n";
-  server.send(200, "text/html", inhalt);
+  server.send(200, "text/html", inhalt); 
 
   // ToDo: Weblink unterschiedlich bei AP und STA
 
@@ -1074,6 +1139,10 @@ void webHandleConfigSave() {
   }
   if (server.hasArg("abst_sen_max_form")) {
     cfg.data_abst_sen_max = server.arg("abst_sen_max_form").toInt();
+    //Serial.println(cfg.data_abst_sen_max);
+  }
+  if (server.hasArg("height_over_NN_form")) {
+    cfg.data_height_over_NN = server.arg("height_over_NN_form").toInt();
     //Serial.println(cfg.data_abst_sen_max);
   }
 
@@ -1168,7 +1237,12 @@ void webHandleConfigSave() {
   if (server.arg("temp_check_form") == "2") {
     cfg.data_temperatur = 2;
   }
-
+  if (server.arg("temp_check_form") == "3") {
+    cfg.data_temperatur = 3;
+  }
+  if (server.arg("temp_check_form") == "4") {
+    cfg.data_temperatur = 4;
+  }
 
   //************************************************************
   //MQTT
@@ -1248,6 +1322,9 @@ void webHandleConfigSave() {
   }
   if (server.arg("zisterne_sensor_form") == "3") {
     cfg.data_zisterne_sensor = 3;
+  }
+  if (server.arg("zisterne_sensor_form") == "4") {
+    cfg.data_zisterne_sensor = 4;
   }
   if (server.hasArg("sensorname_form")) {
     String sensorname;
@@ -1521,9 +1598,17 @@ void webHandleJSON() {
   inhalt += fuellstand;
   inhalt += "\"";
 
-  inhalt += ",\"Abstand\":\"";
-  inhalt += abstand;
-  inhalt += "\"";
+  if (cfg.data_zisterne_sensor < 4) {
+    inhalt += ",\"Abstand\":\"";
+    inhalt += abstand;
+    inhalt += "\"";
+  }
+
+  if (cfg.data_zisterne_sensor = 4) {
+    inhalt += ",\"Fuellhoehe\":\"";
+    inhalt += fuellhoehe;
+    inhalt += "\"";
+  }
 
   if (cfg.data_anzeige_liter_check == 1) {
     inhalt += ",\"Liter\":\"";
@@ -1579,7 +1664,7 @@ void webHandlePushTest() {
   inhalt += "</body>";
   inhalt += "</html>";
   inhalt += "\r\n\r\n";
-  server.send(200, "text/html", inhalt);
+  server.send(200, "text/html", inhalt); 
 }
 
 
@@ -1612,7 +1697,7 @@ void webHandleRelais() {
     inhalt += "\"}";
   }
 
-  server.send(200, "application/json", inhalt);
+  server.send(200, "application/json", inhalt); 
 }
 
 

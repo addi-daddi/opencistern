@@ -1,5 +1,5 @@
 //***********************************************************
-// Schaltet ein zweites externes Relais an Ausgang D3 / Pin 2
+// Schaltet ein zweites externes Relais an Ausgang D4 / Pin 2
 // in Abhaengigkeit von zwei Werten
 // NOCH NICHT IMPLEMENTIERT
 //***********************************************************
