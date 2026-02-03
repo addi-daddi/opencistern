@@ -212,7 +212,8 @@ bool gesendet_mail = false;
 //********************************************************
 // ISR
 //********************************************************
-ICACHE_RAM_ATTR void enableBacklight() {
+// ICACHE_RAM_ATTR void enableBacklight() { (veraltet)
+IRAM_ATTR void enableBacklight() {
     tasterHigh = true;
 }
 
